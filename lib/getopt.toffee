@@ -1,0 +1,86 @@
+class Getopt
+  @HAS_ARGUMENT = true
+  @NO_ARGUMENT = false
+  @MULTI_SUPPORTED = true
+  @SINGLE_ONLY = false
+
+  # private
+  save_option_: (options, option, argv) ->
+    if option.has_argument
+      if argv.length == 0
+        throw new Error("option #{option.long_name} needs argument")
+      value = argv.shift()
+    else
+      value = true
+
+    if option.multi_supported
+      options[option.name] ?= []
+      options[option.name].push value
+    else
+      options[option.name] = value
+    @
+
+
+  # public
+  constructor: (@options) ->
+    @short_options = {}
+    @long_options  = {}
+
+    for option in @options
+      [short_name, long_name, has_argument, multi_supported] = option
+      if long_name == ''
+        long_name = short_name
+      has_argument = !!has_argument
+      multi_supported = !!multi_supported
+      name = long_name
+      @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported}
+
+      if short_name != ''
+        @short_options[short_name] = @long_options[long_name]
+    @
+
+  parse: (argv) ->
+    # clone argv
+    argv = argv[0..]
+    rt_options = {}
+    rt_argv = []
+    while (arg = argv.shift())?
+      if arg =~ /^-(\w+)/
+        # short option
+        short_names = \1
+        for short_name, i in short_names
+          option = @short_options[short_name]
+          unless option
+            throw new Error("invalid option #{short_name}")
+
+          if option.has_argument
+            if i < short_names.length - 1
+              argv.unshift short_names.slice(i+1)
+            @save_option_(rt_options, option, argv)
+            break
+          else
+            @save_option_(rt_options, option, argv)
+
+      else if arg =~ /^--(\w+)((?:=.*)?)$/
+        # long option
+        long_name = \1
+        value     = \2
+        if value != ''
+          value = value[1..]
+          argv.unshift(value)
+        option = @long_options[long_name]
+        unless option
+          throw new Error("invalid option #{long_name}")
+        @save_option_(rt_options, option, argv)
+
+      else if arg == '--'
+        rt_argv = rt_argv.concat(argv)
+        break
+
+      else
+        rt_argv.push arg
+
+    {argv: rt_argv, options: rt_options}
+
+
+module.exports = Getopt
