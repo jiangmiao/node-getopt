@@ -1,12 +1,19 @@
-var Getopt = require('./..')
+// simple.js
+Getopt = require('node-getopt');
 
-// Create Getopt instance with options format
-// Options format:
-//     [short_name, long_name, has_argument, multi_supported]*
+// Getopt constants
+//   HAS_ARGUMENT    = true
+//   NO_ARGUMENT     = false
+//   MULTI_SUPPORTED = true
+//   SINGLE_ONLY     = false
 getopt = new Getopt([
-  ['i', 'input',  1],
-  ['o', 'output', 1]
+  ['s', 'short'],
+  ['l', 'long'],
+  ['S', 'short-with-arg', Getopt.HAS_ARGUMENT],
+  ['L', 'long-with-arg', Getopt.HAS_ARGUMENT],
+  ['m', 'multi-with-arg', Getopt.HAS_ARGUMENT, Getopt.MULTI_SUPPORTED]
 ]);
 
+// process.argv needs slice(2) for it starts with 'node' and 'script name'
 result = getopt.parse(process.argv.slice(2));
 console.info(result);
