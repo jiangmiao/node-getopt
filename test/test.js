@@ -14,6 +14,12 @@
         'has-argument': 'a-value'
       }
     }, 'has-argument');
+    eq(getopt.parse(['--has-argument', 'a-value']), {
+      argv: [],
+      options: {
+        'has-argument': 'a-value'
+      }
+    }, 'has-argument');
     getopt = new Getopt([['A', 'A', 0, 0], ['B', 'B', 0, 0], ['C', 'C', 0, 0]]);
     eq(getopt.parse(['-ABC']), {
       argv: [],

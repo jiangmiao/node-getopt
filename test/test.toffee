@@ -21,6 +21,17 @@ try
     'has-argument'
   )
 
+  eq(
+    getopt.parse(['--has-argument', 'a-value'])
+    {
+      argv: [],
+      options: {
+        'has-argument': 'a-value',
+      }
+    },
+    'has-argument'
+  )
+
   # no argument
   getopt = new Getopt([
     ['A', 'A',  0, 0]

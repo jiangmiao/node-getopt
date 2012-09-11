@@ -45,7 +45,7 @@ class Getopt
     rt_options = {}
     rt_argv = []
     while (arg = argv.shift())?
-      if arg =~ /^-(\w+)/
+      if arg =~ /^-(\w[\w\-]*)/
         # short option
         short_names = \1
         for short_name, i in short_names
@@ -61,7 +61,7 @@ class Getopt
           else
             @save_option_(rt_options, option, argv)
 
-      else if arg =~ /^--(\w+)((?:=.*)?)$/
+      else if arg =~ /^--(\w[\w\-]*)((?:=.*)?)$/
         # long option
         long_name = \1
         value     = \2
