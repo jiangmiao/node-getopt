@@ -1,5 +1,5 @@
 // examples/simple.js
-Getopt = require('node-getopt');
+Getopt = require('..');
 
 // Getopt arguments options
 //   '+': multi arguments
@@ -13,6 +13,6 @@ getopt = new Getopt([
 ]);
 
 // process.argv needs slice(2) for it starts with 'node' and 'script name'
-// equals process.parseSystem()
-result = getopt.parse(process.argv.slice(2));
+// getopt.parse(process.argv.slice(2));
+result = getopt.parseSystem();
 console.info(result);

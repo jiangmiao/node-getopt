@@ -91,4 +91,11 @@ class Getopt
 
     {argv: rt_argv, options: rt_options}
 
+  parse_system: ->
+    @parse(process.argv.slice(2))
+
+  parseSystem: ->
+    @parse_system()
+
+
 module.exports = Getopt
