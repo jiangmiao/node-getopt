@@ -1,3 +1,4 @@
+# integer argument is comptible with v0.1.0
 try
   Getopt = require './..'
   assert = require 'assert'
@@ -7,7 +8,7 @@ try
 
   # has argument
   getopt = new Getopt([
-    ['a', 'has-argument', ':'],
+    ['a', 'has-argument', 1, 0],
   ])
 
   eq(
@@ -34,9 +35,9 @@ try
 
   # no argument
   getopt = new Getopt([
-    ['A', 'A']
-    ['B', 'B']
-    ['C', 'C']
+    ['A', 'A',  0, 0]
+    ['B', 'B',  0, 0]
+    ['C', 'C',  0, 0]
   ])
 
   eq(
@@ -54,10 +55,10 @@ try
 
   # combined has argument and no argument
   getopt = new Getopt([
-    ['a', 'a', ':']
-    ['A', 'A']
-    ['B', 'B']
-    ['C', 'C']
+    ['a', 'a',  1, 0]
+    ['A', 'A',  0, 0]
+    ['B', 'B',  0, 0]
+    ['C', 'C',  0, 0]
   ])
 
   eq(
@@ -85,7 +86,7 @@ try
 
   # long option
   getopt = new Getopt([
-    ['h', 'help']
+    ['h', 'help', 0, 0]
   ])
 
   eq(
@@ -114,9 +115,9 @@ try
 
   # mixed
   getopt = new Getopt([
-    ['h', 'help'],
-    ['m', 'multi', ':+'],
-    ['s', 'short']
+    ['h', 'help', 0, 0],
+    ['m', 'multi', 1, 1],
+    ['s', 'short', 0, 0]
   ])
 
   eq(

@@ -28,6 +28,15 @@ class Getopt
 
     for option in @options
       [short_name, long_name, has_argument, multi_supported] = option
+      if typeof(has_argument) == 'string'
+        # 3rd param is string
+        # '+' multi_supported
+        # ':' has_argument
+        info = has_argument
+        if info.indexOf('+') != -1
+          multi_supported = true
+        if info.indexOf(':') != -1
+          has_argument = true
       if long_name == ''
         long_name = short_name
       has_argument = !!has_argument
@@ -81,6 +90,5 @@ class Getopt
         rt_argv.push arg
 
     {argv: rt_argv, options: rt_options}
-
 
 module.exports = Getopt

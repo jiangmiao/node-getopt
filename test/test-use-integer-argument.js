@@ -7,7 +7,7 @@
     assert = require('assert');
     eq = assert.deepEqual;
     throws = assert.throws;
-    getopt = new Getopt([['a', 'has-argument', ':']]);
+    getopt = new Getopt([['a', 'has-argument', 1, 0]]);
     eq(getopt.parse(['-a', 'a-value']), {
       argv: [],
       options: {
@@ -20,7 +20,7 @@
         'has-argument': 'a-value'
       }
     }, 'has-argument');
-    getopt = new Getopt([['A', 'A'], ['B', 'B'], ['C', 'C']]);
+    getopt = new Getopt([['A', 'A', 0, 0], ['B', 'B', 0, 0], ['C', 'C', 0, 0]]);
     eq(getopt.parse(['-ABC']), {
       argv: [],
       options: {
@@ -29,7 +29,7 @@
         'C': true
       }
     }, 'no-argument');
-    getopt = new Getopt([['a', 'a', ':'], ['A', 'A'], ['B', 'B'], ['C', 'C']]);
+    getopt = new Getopt([['a', 'a', 1, 0], ['A', 'A', 0, 0], ['B', 'B', 0, 0], ['C', 'C', 0, 0]]);
     eq(getopt.parse(['-ABCa', 'foo']), {
       argv: [],
       options: {
@@ -45,7 +45,7 @@
     }, function(err) {
       return err.message === 'invalid option A';
     });
-    getopt = new Getopt([['h', 'help']]);
+    getopt = new Getopt([['h', 'help', 0, 0]]);
     eq(getopt.parse(['--help']), {
       argv: [],
       options: {
@@ -57,7 +57,7 @@
       argv: ['hello', 'world'],
       options: {}
     });
-    getopt = new Getopt([['h', 'help'], ['m', 'multi', ':+'], ['s', 'short']]);
+    getopt = new Getopt([['h', 'help', 0, 0], ['m', 'multi', 1, 1], ['s', 'short', 0, 0]]);
     eq(getopt.parse('foo --help --multi a -m b -sm c -- --help'.split(' ')), {
       argv: ['foo', '--help'],
       options: {
