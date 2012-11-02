@@ -10,8 +10,8 @@ code: simple.js
     Getopt = require('node-getopt');
 
     // Getopt argument options
-    //   '+': multi arguments
     //   ':': has argument
+    //   '+': multi arguments
     getopt = new Getopt([
       ['s', 'short'],
       ['l', 'long'],
@@ -22,6 +22,10 @@ code: simple.js
 
     // process.argv needs slice(2) for it starts with 'node' and 'script name'
     result = getopt.parse(process.argv.slice(2));
+    console.info(result);
+
+    // alias of parse process.argv.slice(2)
+    result = getopt.parseSystem();
     console.info(result);
 
 run
