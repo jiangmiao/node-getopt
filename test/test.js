@@ -66,7 +66,7 @@
         'short': true
       }
     });
-    console.info('Test passed.');
+    console.info("\x1b[32mTest passed.\x1b[0m");
   } catch (e) {
     console.info(e);
     console.info('\n--- STACK TRACE ---\n');
