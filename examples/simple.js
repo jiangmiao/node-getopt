@@ -3,15 +3,16 @@
 Getopt = require('..');
 
 // Getopt arguments options
-//   '+': multi arguments
-//   ':': has argument
-//   '#': comment
+//   '=':   has argument
+//   '[=]': has argument but optional
+//   '+':   multiple option supported
 getopt = new Getopt([
   ['s' , ''],
   [''  , 'long'],
-  ['S' , 'short-with-arg' , ':'],
-  ['L' , 'long-with-arg'  , ':'],
-  ['m' , 'multi-with-arg' , ':+'],
+  ['S' , 'short-with-arg='],
+  ['L' , 'long-with-arg=ARG'],
+  ['m' , 'multi-with-arg=ARG+'],
+  [''  , 'color[=COLOR]'],
   ['h' , 'help']
 ]);
 
@@ -19,4 +20,8 @@ getopt = new Getopt([
 // parseSystem is alias  of parse(process.argv.slice(2))
 // opt = getopt.parseSystem();
 opt = getopt.parse(process.argv.slice(2));
+if (opt.options.help) {
+  getopt.showHelp();
+  process.exit(0);
+}
 console.info(opt);

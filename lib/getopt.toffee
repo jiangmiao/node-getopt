@@ -8,16 +8,23 @@ class Getopt
   save_option_: (options, option, argv) ->
     if option.has_argument
       if argv.length == 0
-        throw new Error("option #{option.long_name} needs argument")
+        throw new Error("option #{option.long_name} need argument")
       value = argv.shift()
     else
       value = true
 
-    if option.multi_supported
-      options[option.name] ?= []
-      options[option.name].push value
-    else
-      options[option.name] = value
+    names = [option.name]
+    # Have't decided replace - to _ or not or both existed
+    #    opt.options['option-with-hyphen']
+    # vs opt.options.option_with_hyphen
+    # if option.name.indexOf('-') != -1
+    #   names.push option.name.replace(/\-/g, '_')
+    for name in names
+      if option.multi_supported
+        options[name] ?= []
+        options[name].push value
+      else
+        options[name] = value
     @
 
 
@@ -28,30 +35,25 @@ class Getopt
     @long_names = []
 
     if process.argv[1]
-      @help = "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]"
+      @help = "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]\n"
     else
       @help = "[[OPTIONS]]"
 
     for option in @options
-      [short_name, long_name, has_argument, multi_supported] = option
-      comment = ''
+      [short_name, definition, comment] = option
 
-      if typeof(has_argument) == 'string'
-        # 3rd param is string
-        # ':' has_argument
-        # '+' multi_supported
-        # '#' comment
-        info = has_argument
-        info =~ /^(.*?)(?:#(.*))?$/
-        comment = \2 ? ''
-        info = \1
-        multi_supported = info.indexOf('+') != -1
-        has_argument =  info.indexOf(':') != -1
-      else
-        # comptible with v0.1.0
-        has_argument = !!has_argument
-        multi_supported = !!multi_supported
-        comment = ''
+      comment    ?= ''
+      definition ?= ''
+      short_name ?= ''
+
+      definition =~ /^([\w\-]*)/
+      long_name = \1
+      has_argument    = definition.indexOf('=') != -1
+      multi_supported = definition.indexOf('+') != -1
+      optional        = /\[=.*?\]/.test(definition)
+
+      if optional && short_name
+        throw new Error('optional argument can only work with long option');
 
       unless long_name
         long_name = short_name
@@ -60,7 +62,7 @@ class Getopt
 
       unless @long_options[long_name]?
         @long_names.push long_name
-        @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported, comment}
+        @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition}
       else
         throw new Error("option #{long_name} redefined.");
 
@@ -96,12 +98,16 @@ class Getopt
         # long option
         long_name = \1
         value     = \2
-        if value != ''
-          value = value[1..]
-          argv.unshift(value)
         option = @long_options[long_name]
         unless option
           throw new Error("invalid option #{long_name}")
+
+        if value != ''
+          value = value[1..]
+          argv.unshift(value)
+        else if option.optional
+          argv.unshift('')
+
         @save_option_(rt_options, option, argv)
 
       else if arg == '--'
@@ -128,16 +134,16 @@ class Getopt
 
     for long_name in @long_names
       option = @long_options[long_name]
-      {short_name, long_name, comment} = option
+      {short_name, long_name, comment, definition} = option
       if (short_name && short_name == long_name)
         # only has short name
         opt = "-#{short_name}"
       else if short_name
         # both has short name and long name
-        opt = "-#{short_name}, --#{long_name}"
+        opt = "-#{short_name}, --#{definition}"
       else
         # only has long name
-        opt = "    --#{long_name}"
+        opt = "    --#{definition}"
       ws[0] = Math.max(ws[0] >> 0, opt.length)
       options.push [opt, comment]
 

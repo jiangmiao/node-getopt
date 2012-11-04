@@ -1,11 +1,12 @@
 node-getopt
 ===========
+Featured command line parser.
 
 Basic Usage
 -----------
 
-Parse Commandline
-=================
+**Parse Commandline**
+
 code: simple.js
 
     // examples/simple.js
@@ -13,15 +14,16 @@ code: simple.js
     Getopt = require('..');
 
     // Getopt arguments options
-    //   '+': multi arguments
-    //   ':': has argument
-    //   '#': comment
+    //   '=':   has argument
+    //   '[=]': has argument but optional
+    //   '+':   multiple option supported
     getopt = new Getopt([
       ['s' , ''],
       [''  , 'long'],
-      ['S' , 'short-with-arg' , ':'],
-      ['L' , 'long-with-arg'  , ':'],
-      ['m' , 'multi-with-arg' , ':+'],
+      ['S' , 'short-with-arg=ARG'],
+      ['L' , 'long-with-arg=ARG'],
+      ['m' , 'multi-with-arg=ARG+'],
+      [''  , 'color[=COLOR]'],
       ['h' , 'help']
     ]);
 
@@ -35,29 +37,32 @@ $ node examples/simple.js foo -s --long-with-arg bar -m a -m b -- --others
 
     { argv: [ 'foo', '--others' ],
       options:
-       { short: true,
+       { s: true,
          'long-with-arg': 'bar',
          'multi-with-arg': [ 'a', 'b' ] } }
 
-Work with help
-==============
+$ node examples/simple.js
+
+**Work with help**
+
 code: help.js
 
     // examples/help.js
-    // Works with help generator
+    // Works with help
     Getopt = require('..');
 
     getopt = new Getopt([
-      ['s' , ''               , '  # short option.'],
-      [''  , 'long'           , '  # long option.'],
-      ['S' , 'short-with-arg' , ': # option with argument'],
-      ['L' , 'long-with-arg'  , ': # long option with argument'],
-      ['m' , 'multi-with-arg' , ':+# multiple option with argument'],
-      [''  , 'no-comment'     , ''],
-      ['h' , 'help'           , '  # display this help']
+      ['s' , ''                    , 'short option.'],
+      [''  , 'long'                , 'long option.'],
+      ['S' , 'short-with-arg=ARG'  , 'option with argument'],
+      ['L' , 'long-with-arg=ARG'   , 'long option with argument'],
+      [''  , 'color[=COLOR]'       , 'COLOR is optional'],
+      ['m' , 'multi-with-arg=ARG+' , 'multiple option with argument'],
+      [''  , 'no-comment'],
+      ['h' , 'help'                , 'display this help']
     ]);
 
-    // Use custom help template instead of default
+    // Use custom help template instead of default help
     // [[OPTIONS]] is the placeholder for options list
     getopt.setHelp(
       "Usage: node help.js [OPTION]\n" +
@@ -76,17 +81,17 @@ $ node examples/help.js
     Usage: node help.js [OPTION]
     node-getopt help demo.
 
-      -s                     short option.
-          --long             long option.
-      -S, --short-with-arg   option with argument
-      -L, --long-with-arg    long option with argument
-      -m, --multi-with-arg   multiple option with argument
-          --no-comment
-      -h, --help             display this help
+      -s                         short option.
+          --long                 long option.
+      -S, --short-with-arg=ARG   option with argument
+      -L, --long-with-arg=ARG    long option with argument
+          --color[=COLOR]        COLOR is optional
+      -m, --multi-with-arg=ARG+  multiple option with argument
+          --no-comment           undefined
+      -h, --help                 display this help
 
     Installation: npm install node-getopt
     Respository:  https://github.com/jiangmiao/node-getopt
-
 
 Features
 --------
@@ -106,6 +111,28 @@ long option name
 
     $ node simple.js --long-with-arg foo
     { argv: [], options: { 'long-with-arg': 'foo' } }
+
+argument required
+    $ node simple.js --long-with-arg
+    ERROR: option long-with-arg need argument
+
+    $ node simple.js --long-with-arg foo
+    { argv: [], options: { 'long-with-arg': 'foo' } }
+
+    $ node simple.js --long-with-arg=foo
+    { argv: [], options: { 'long-with-arg': 'foo' } }
+
+optional argument
+    $ node simple.js --color
+    { argv: [], options: { color: '' } }
+
+    $ node simple.js --color=foo
+    { argv: [], options: { color: 'foo' } }
+
+    $ node simple.js --color foo
+    { argv: [], options: { color: 'foo' } }
+    $ node examples/simple.js --color foo
+    { argv: [ 'foo' ], options: { color: '' }
 
 chain option
 
@@ -139,12 +166,13 @@ Getopt Methods:
 
     constructor(Array options)
         options is a set of option. each option contains 3 fields.
-        [short_name, long_name, definitions]
+        [short_name, long_name_with_definition, comment]
+        Definition:
+            * '=ARG':   has argument
+            * '[=ARG]': has argument but optional
+            * '+':      multiple option supported
 
-        Definitions:
-            * ':' - The option has argument
-            * '+' - Multiple option supported
-            * '#' - Comment
+            ARG can be replaced by any word.
 
     parse(Array argv)
         parse argv
@@ -173,4 +201,9 @@ Others:
 
     default help template:
 
-        "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]"
+        "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]\n"
+
+Remarks
+-------
+
+    v0.2.* is NOT compatible with v0.1.*

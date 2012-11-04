@@ -3,13 +3,14 @@
 Getopt = require('..');
 
 getopt = new Getopt([
-  ['s' , ''               , '  # short option.'],
-  [''  , 'long'           , '  # long option.'],
-  ['S' , 'short-with-arg' , ': # option with argument'],
-  ['L' , 'long-with-arg'  , ': # long option with argument'],
-  ['m' , 'multi-with-arg' , ':+# multiple option with argument'],
-  [''  , 'no-comment'     , ''],
-  ['h' , 'help'           , '  # display this help']
+  ['s' , ''                    , 'short option.'],
+  [''  , 'long'                , 'long option.'],
+  ['S' , 'short-with-arg=ARG'  , 'option with argument'],
+  ['L' , 'long-with-arg=ARG'   , 'long option with argument'],
+  [''  , 'color[=COLOR]'       , 'COLOR is optional'],
+  ['m' , 'multi-with-arg=ARG+' , 'multiple option with argument'],
+  [''  , 'no-comment'],
+  ['h' , 'help'                , 'display this help']
 ]);
 
 // Use custom help template instead of default help
