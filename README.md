@@ -26,16 +26,16 @@ code: oneline.js
 
     console.info(opt);
 
-run
+`$ node oneline.js  foo -s --long-with-arg bar -m a -m b -- --others`
 
-    $ node oneline.js  foo -s --long-with-arg bar -m a -m b -- --others
     { argv: [ 'foo', '--others' ],
       options:
        { s: true,
          'long-with-arg': 'bar',
          'multi-with-arg': [ 'a', 'b' ] } }
 
-    $ node oneline.js -h
+`$ node oneline.js -h`
+
     Usage: node oneline.js
 
       -s                         short option.
@@ -72,7 +72,8 @@ code: simple.js
     opt = getopt.parse(process.argv.slice(2));
     console.info(opt);
 
-    $ node simple.js foo -s --long-with-arg bar -m a -m b -- --others
+`$ node simple.js foo -s --long-with-arg bar -m a -m b -- --others`
+
     { argv: [ 'foo', '--others' ],
       options: { s: true, 'long-with-arg': 'bar', m: [ 'a', 'b' ] } }
 
@@ -109,7 +110,7 @@ code: help.js
 
     getopt.showHelp();
 
-$ node examples/help.js
+`$ node examples/help.js`
 
     Usage: node help.js [OPTION]
     node-getopt help demo.
