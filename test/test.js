@@ -20,7 +20,7 @@
         'has-argument': 'a-value'
       }
     }, 'has-argument');
-    getopt = new Getopt([['A', 'A'], ['B', 'B'], ['C', 'C']]);
+    getopt = new Getopt([['A', 'A'], ['B', 'B'], ['C', 'C', '']]);
     eq(getopt.parse(['-ABC']), {
       argv: [],
       options: {

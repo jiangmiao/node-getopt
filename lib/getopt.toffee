@@ -25,26 +25,48 @@ class Getopt
   constructor: (@options) ->
     @short_options = {}
     @long_options  = {}
+    @long_names = []
+
+    if process.argv[1]
+      @help = "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]"
+    else
+      @help = "[[OPTIONS]]"
 
     for option in @options
       [short_name, long_name, has_argument, multi_supported] = option
+      comment = ''
+
       if typeof(has_argument) == 'string'
         # 3rd param is string
-        # '+' multi_supported
         # ':' has_argument
+        # '+' multi_supported
+        # '#' comment
         info = has_argument
-        if info.indexOf('+') != -1
-          multi_supported = true
-        if info.indexOf(':') != -1
-          has_argument = true
-      if long_name == ''
+        info =~ /^(.*?)(?:#(.*))?$/
+        comment = \2 ? ''
+        info = \1
+        multi_supported = info.indexOf('+') != -1
+        has_argument =  info.indexOf(':') != -1
+      else
+        # comptible with v0.1.0
+        has_argument = !!has_argument
+        multi_supported = !!multi_supported
+        comment = ''
+
+      unless long_name
         long_name = short_name
-      has_argument = !!has_argument
-      multi_supported = !!multi_supported
+
       name = long_name
-      @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported}
+
+      unless @long_options[long_name]?
+        @long_names.push long_name
+        @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported, comment}
+      else
+        throw new Error("option #{long_name} redefined.");
 
       if short_name != ''
+        if short_name.length != 1
+          throw new Error 'short option must be single characters'
         @short_options[short_name] = @long_options[long_name]
     @
 
@@ -97,5 +119,38 @@ class Getopt
   parseSystem: ->
     @parse_system()
 
+  setHelp: (@help) ->
+    @
+
+  getHelp: ->
+    ws = []
+    options = []
+
+    for long_name in @long_names
+      option = @long_options[long_name]
+      {short_name, long_name, comment} = option
+      if (short_name && short_name == long_name)
+        # only has short name
+        opt = "-#{short_name}"
+      else if short_name
+        # both has short name and long name
+        opt = "-#{short_name}, --#{long_name}"
+      else
+        # only has long name
+        opt = "    --#{long_name}"
+      ws[0] = Math.max(ws[0] >> 0, opt.length)
+      options.push [opt, comment]
+
+    strs = for option in options
+      [opt, comment] = option
+      while opt.length < ws[0]
+        opt += ' '
+      "  #{opt}  #{comment}"
+
+    @help.replace('[[OPTIONS]]', strs.join("\n"))
+
+  showHelp: ->
+    console.info @getHelp()
+    @
 
 module.exports = Getopt

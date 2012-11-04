@@ -9,24 +9,42 @@ code: simple.js
     // examples/simple.js
     Getopt = require('node-getopt');
 
-    // Getopt argument options
-    //   ':': has argument
+    // Getopt arguments options
     //   '+': multi arguments
+    //   ':': has argument
+    //   '#': comment
     getopt = new Getopt([
-      ['s', 'short'],
-      ['l', 'long'],
-      ['S' , 'short-with-arg' , ':']  ,
-      ['L' , 'long-with-arg'  , ':']  ,
-      ['m' , 'multi-with-arg' , ':+']
+      ['s' , ''               , '  # short option.'],
+      [''  , 'long'           , '  # long option.'],
+      ['S' , 'short-with-arg' , ': # option with argument'],
+      ['L' , 'long-with-arg'  , ': # long option with argument'],
+      ['m' , 'multi-with-arg' , ':+# multiple option with argument'],
+      [''  , 'no-comment'     , ''],
+      ['h' , 'help'           , '  # Show this help']
     ]);
 
-    // process.argv needs slice(2) for it starts with 'node' and 'script name'
-    result = getopt.parse(process.argv.slice(2));
-    console.info(result);
+    // Use custom help template instead of default help
+    // [[OPTIONS]] is the placeholder for options list
+    getopt.setHelp(
+      "Usage: node simple.js [OPTION]\n" +
+      "node-getopt simple demo.\n" +
+      "\n" +
+      "[[OPTIONS]]\n" +
+      "\n" +
+      "Installation: npm install node-getopt\n" +
+      "Respository:  https://github.com/jiangmiao/node-getopt"
+    );
 
-    // alias of parse process.argv.slice(2)
-    result = getopt.parseSystem();
-    console.info(result);
+    // process.argv needs slice(2) for it starts with 'node' and 'script name'
+    // parseSystem is alias  of parse(process.argv.slice(2))
+    // opt = getopt.parseSystem();
+    opt = getopt.parse(process.argv.slice(2));
+    if (opt.options.help) {
+      getopt.showHelp();
+      process.exit(0)
+    }
+
+    console.info(opt);
 
 run
 
@@ -36,6 +54,22 @@ run
        { short: true,
          'long-with-arg': 'bar',
          'multi-with-arg': [ 'a', 'b' ] } }
+
+    $ node examples/simple.js -h
+    Usage: node simple.js [OPTION]
+    node-getopt simple demo.
+
+      -s                     short option.
+          --long             long option.
+      -S, --short-with-arg   option with argument
+      -L, --long-with-arg    long option with argument
+      -m, --multi-with-arg   multiple option with argument
+          --no-comment
+      -h, --help             Show this help
+
+    Installation: npm install node-getopt
+    Respository:  https://github.com/jiangmiao/node-getopt
+
 
 Features
 --------
@@ -78,3 +112,48 @@ keep text after --
 
     $ node simple.js -s -- -s
     { argv: [ '-s' ], options: { short: true } }
+
+References
+----------
+
+    require('node-getopt') returns class Getopt
+
+Getopt Methods:
+
+    constructor(Array options)
+        options is a set of option. each option contains 3 fields.
+        [short_name, long_name, definitions]
+
+        Definitions:
+            * ':' - The option has argument
+            * '+' - Multiple option supported
+            * '#' - Comment
+
+    parse(Array argv)
+        parse argv
+
+        Returns: {argv: '...', options: {...}}
+
+    parseSystem()
+        alias of parse(process.argv.slice(2))
+
+
+    setHelp(String helpTemplate)
+        Set help template. the placeholders will be replaced by getopt.
+
+        Placeholders:
+            * [[OPTIONS]] - The options list
+
+        Returns: String
+
+    getHelp()
+        Get the help generated.
+
+    showHelp()
+        console.info(getopt.getHelp());
+
+Others:
+
+    default help template:
+
+        "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]"
