@@ -7,7 +7,7 @@ try
 
   # has argument
   getopt = new Getopt([
-    ['a', 'has-argument', ':'],
+    ['a', 'has-argument='],
   ])
 
   eq(
@@ -54,7 +54,7 @@ try
 
   # combined has argument and no argument
   getopt = new Getopt([
-    ['a', 'a', ':']
+    ['a', 'a=']
     ['A', 'A']
     ['B', 'B']
     ['C', 'C']
@@ -115,7 +115,7 @@ try
   # mixed
   getopt = new Getopt([
     ['h', 'help'],
-    ['m', 'multi', ':+'],
+    ['m', 'multi=+'],
     ['s', 'short']
   ])
 
