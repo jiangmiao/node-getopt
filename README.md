@@ -85,7 +85,7 @@ $ node examples/help.js
       -L, --long-with-arg=ARG    long option with argument
           --color[=COLOR]        COLOR is optional
       -m, --multi-with-arg=ARG+  multiple option with argument
-          --no-comment           undefined
+          --no-comment
       -h, --help                 display this help
 
     Installation: npm install node-getopt
