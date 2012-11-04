@@ -59,12 +59,13 @@ code: simple.js
     //   '[=]': has argument but optional
     //   '+':   multiple option supported
     getopt = new Getopt([
-      ['s' , ''],
-      ['L' , '='],
+      ['s'],
+      ['S' , '='],
+      [''  , 'long-with-arg=ARG'],
       ['m' , '=+'],
-      [''  , 'color[=]'],
+      [''  , 'color[=COLOR]'],
       ['h' , 'help']
-    ]);
+    ]).bindHelp();
 
     // process.argv needs slice(2) for it starts with 'node' and 'script name'
     // parseSystem is alias  of parse(process.argv.slice(2))
