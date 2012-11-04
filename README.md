@@ -7,11 +7,52 @@ Basic Usage
 
 **Parse Commandline**
 
+code: oneline.js
+
+    // node-getopt oneline example.
+    opt = require('node-getopt').create([
+      ['s' , ''                    , 'short option.'],
+      [''  , 'long'                , 'long option.'],
+      ['S' , 'short-with-arg=ARG'  , 'option with argument'],
+      ['L' , 'long-with-arg=ARG'   , 'long option with argument'],
+      [''  , 'color[=COLOR]'       , 'COLOR is optional'],
+      ['m' , 'multi-with-arg=ARG+' , 'multiple option with argument'],
+      [''  , 'no-comment'],
+      ['h' , 'help'                , 'display this help'],
+      ['v' , 'version'             , 'show version']
+    ])              // create Getopt instance
+    .bindHelp()     // bind option 'help' to default action
+    .parseSystem(); // parse command line
+
+    console.info(opt);
+
+run
+
+    $ node oneline.js  foo -s --long-with-arg bar -m a -m b -- --others
+    { argv: [ 'foo', '--others' ],
+      options:
+       { s: true,
+         'long-with-arg': 'bar',
+         'multi-with-arg': [ 'a', 'b' ] } }
+
+    $ node oneline.js -h
+    Usage: node oneline.js
+
+      -s                         short option.
+          --long                 long option.
+      -S, --short-with-arg=ARG   option with argument
+      -L, --long-with-arg=ARG    long option with argument
+          --color[=COLOR]        COLOR is optional
+      -m, --multi-with-arg=ARG+  multiple option with argument
+          --no-comment
+      -h, --help                 display this help
+      -v, --version              show version
+
 code: simple.js
 
     // examples/simple.js
     // argv parse
-    Getopt = require('..');
+    Getopt = require('node-getopt');
 
     // Getopt arguments options
     //   '=':   has argument
@@ -47,7 +88,7 @@ code: help.js
 
     // examples/help.js
     // Works with help
-    Getopt = require('..');
+    Getopt = require('node-getopt');
 
     getopt = new Getopt([
       ['s' , ''                    , 'short option.'],
@@ -172,16 +213,16 @@ Getopt Methods:
 
             ARG can be replaced by any word.
 
-    parse(Array argv)
+    Object parse(Array argv)
         parse argv
 
         Returns: {argv: '...', options: {...}}
 
-    parseSystem()
+    Object parseSystem()
         alias of parse(process.argv.slice(2))
 
 
-    setHelp(String helpTemplate)
+    Getopt setHelp(String helpTemplate)
         Set help template. the placeholders will be replaced by getopt.
 
         Placeholders:
@@ -189,11 +230,19 @@ Getopt Methods:
 
         Returns: String
 
-    getHelp()
+    String getHelp()
         Get the help generated.
 
-    showHelp()
+    Getopt showHelp()
         console.info(getopt.getHelp());
+
+    Getopt bindHelp([String HELP])
+        set help template to HELP if HELP is not empty.
+        bind 'help' option to default action, show help and exit with 0.
+
+    Getpot on(String optionName, Function(Array argv, Object options) action)
+        after parsing, trigger the action if optionName is found.
+        the 'this' in action will be instance of Getopt.
 
 Others:
 

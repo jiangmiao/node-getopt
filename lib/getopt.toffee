@@ -3,6 +3,7 @@ class Getopt
   @NO_ARGUMENT = false
   @MULTI_SUPPORTED = true
   @SINGLE_ONLY = false
+  @VERSION = '0.2.1'
 
   # private
   save_option_: (options, option, argv) ->
@@ -33,6 +34,8 @@ class Getopt
     @short_options = {}
     @long_options  = {}
     @long_names = []
+    @events = {}
+    @event_names = []
 
     if process.argv[1]
       @help = "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]\n"
@@ -72,6 +75,20 @@ class Getopt
         @short_options[short_name] = @long_options[long_name]
     @
 
+  # Events
+  on: (name, cb) ->
+    @events[name] = cb
+    @event_names.push name
+    @
+
+  trigger_events_: (opt) ->
+    {options} = opt
+    for name in @event_names
+      if options[name]?
+        @events[name].call @, opt.argv, opt.options
+    @
+
+  # Command line parser
   parse: (argv) ->
     # clone argv
     argv = argv[0..]
@@ -117,7 +134,10 @@ class Getopt
       else
         rt_argv.push arg
 
-    {argv: rt_argv, options: rt_options}
+    opt = {argv: rt_argv, options: rt_options}
+    @parsedOptions = opt
+    @trigger_events_(opt)
+    opt
 
   parse_system: ->
     @parse(process.argv.slice(2))
@@ -125,6 +145,7 @@ class Getopt
   parseSystem: ->
     @parse_system()
 
+  # Help Controller
   setHelp: (@help) ->
     @
 
@@ -158,5 +179,23 @@ class Getopt
   showHelp: ->
     console.info @getHelp()
     @
+
+  bindHelp: (help) ->
+    if help
+      @setHelp help
+    @on 'help', ->
+      @showHelp()
+      process.exit(0)
+    @
+
+  getVersion: ->
+    Getopt.VERSION
+
+  @getVersion: ->
+    @VERSION
+
+  # For oneline creator
+  @create: (options) ->
+    new Getopt(options)
 
 module.exports = Getopt
