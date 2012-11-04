@@ -20,7 +20,7 @@ code: simple.js
     getopt = new Getopt([
       ['s' , ''],
       [''  , 'long'],
-      ['S' , 'short-with-arg=ARG'],
+      ['S' , 'short-with-arg='],
       ['L' , 'long-with-arg=ARG'],
       ['m' , 'multi-with-arg=ARG+'],
       [''  , 'color[=COLOR]'],
@@ -40,8 +40,6 @@ $ node examples/simple.js foo -s --long-with-arg bar -m a -m b -- --others
        { s: true,
          'long-with-arg': 'bar',
          'multi-with-arg': [ 'a', 'b' ] } }
-
-$ node examples/simple.js
 
 **Work with help**
 
@@ -113,6 +111,7 @@ long option name
     { argv: [], options: { 'long-with-arg': 'foo' } }
 
 argument required
+
     $ node simple.js --long-with-arg
     ERROR: option long-with-arg need argument
 
@@ -123,6 +122,7 @@ argument required
     { argv: [], options: { 'long-with-arg': 'foo' } }
 
 optional argument
+
     $ node simple.js --color
     { argv: [], options: { color: '' } }
 
