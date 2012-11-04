@@ -236,7 +236,7 @@ Getopt Methods:
 
     Getpot on(String optionName, Function<Array argv, Object options> action)
         after parsing, trigger the action if optionName is found.
-        the 'this' in action will be instance of Getopt.
+        the 'this' in action will be the instance of Getopt.
 
     Getopt error(Function<Error e> callback)
         when parse failed callback will be trigger. default is display error message and exit with 1.
