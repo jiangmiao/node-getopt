@@ -4,15 +4,49 @@ node-getopt
 Basic Usage
 -----------
 
+Parse Commandline
+=================
 code: simple.js
 
     // examples/simple.js
-    Getopt = require('node-getopt');
+    // argv parse
+    Getopt = require('..');
 
     // Getopt arguments options
     //   '+': multi arguments
     //   ':': has argument
     //   '#': comment
+    getopt = new Getopt([
+      ['s' , ''],
+      [''  , 'long'],
+      ['S' , 'short-with-arg' , ':'],
+      ['L' , 'long-with-arg'  , ':'],
+      ['m' , 'multi-with-arg' , ':+'],
+      ['h' , 'help']
+    ]);
+
+    // process.argv needs slice(2) for it starts with 'node' and 'script name'
+    // parseSystem is alias  of parse(process.argv.slice(2))
+    // opt = getopt.parseSystem();
+    opt = getopt.parse(process.argv.slice(2));
+    console.info(opt);
+
+$ node examples/simple.js foo -s --long-with-arg bar -m a -m b -- --others
+
+    { argv: [ 'foo', '--others' ],
+      options:
+       { short: true,
+         'long-with-arg': 'bar',
+         'multi-with-arg': [ 'a', 'b' ] } }
+
+Work with help
+==============
+code: help.js
+
+    // examples/help.js
+    // Works with help generator
+    Getopt = require('..');
+
     getopt = new Getopt([
       ['s' , ''               , '  # short option.'],
       [''  , 'long'           , '  # long option.'],
@@ -20,14 +54,14 @@ code: simple.js
       ['L' , 'long-with-arg'  , ': # long option with argument'],
       ['m' , 'multi-with-arg' , ':+# multiple option with argument'],
       [''  , 'no-comment'     , ''],
-      ['h' , 'help'           , '  # Show this help']
+      ['h' , 'help'           , '  # display this help']
     ]);
 
-    // Use custom help template instead of default help
+    // Use custom help template instead of default
     // [[OPTIONS]] is the placeholder for options list
     getopt.setHelp(
-      "Usage: node simple.js [OPTION]\n" +
-      "node-getopt simple demo.\n" +
+      "Usage: node help.js [OPTION]\n" +
+      "node-getopt help demo.\n" +
       "\n" +
       "[[OPTIONS]]\n" +
       "\n" +
@@ -35,29 +69,12 @@ code: simple.js
       "Respository:  https://github.com/jiangmiao/node-getopt"
     );
 
-    // process.argv needs slice(2) for it starts with 'node' and 'script name'
-    // parseSystem is alias  of parse(process.argv.slice(2))
-    // opt = getopt.parseSystem();
-    opt = getopt.parse(process.argv.slice(2));
-    if (opt.options.help) {
-      getopt.showHelp();
-      process.exit(0)
-    }
+    getopt.showHelp();
 
-    console.info(opt);
+$ node examples/help.js
 
-run
-
-    $ node examples/simple.js foo -s --long-with-arg bar -m a -m b -- --others
-    { argv: [ 'foo', '--others' ],
-      options:
-       { short: true,
-         'long-with-arg': 'bar',
-         'multi-with-arg': [ 'a', 'b' ] } }
-
-    $ node examples/simple.js -h
-    Usage: node simple.js [OPTION]
-    node-getopt simple demo.
+    Usage: node help.js [OPTION]
+    node-getopt help demo.
 
       -s                     short option.
           --long             long option.
@@ -65,7 +82,7 @@ run
       -L, --long-with-arg    long option with argument
       -m, --multi-with-arg   multiple option with argument
           --no-comment
-      -h, --help             Show this help
+      -h, --help             display this help
 
     Installation: npm install node-getopt
     Respository:  https://github.com/jiangmiao/node-getopt
