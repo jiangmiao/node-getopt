@@ -39,7 +39,9 @@
         'a': 'foo'
       }
     }, 'no-argument');
-    getopt = new Getopt([]);
+    getopt = new Getopt([]).error(function(e) {
+      throw e;
+    });
     throws(function() {
       return getopt.parse(['-A']);
     }, function(err) {

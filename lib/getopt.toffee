@@ -1,3 +1,12 @@
+class ParsedOption
+  constructor: (@argv, @options) ->
+  empty: ->
+    if @argv.length
+      return false
+    for own k, v of @options
+      return false
+    return true
+
 class Getopt
   @HAS_ARGUMENT = true
   @NO_ARGUMENT = false
@@ -5,7 +14,83 @@ class Getopt
   @SINGLE_ONLY = false
   @VERSION = '0.2.1'
 
-  # private
+
+  # public
+  constructor: (@options) ->
+    @short_options = {}
+    @long_options  = {}
+    @long_names = []
+    @events = {}
+    @event_names = []
+    @errorFunc = (e) ->
+      console.info(e.message)
+      process.exit(1)
+
+
+    if process.argv[1]
+      @help = "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]\n"
+    else
+      @help = "[[OPTIONS]]"
+
+    for option in @options
+      [short_name, definition, comment] = option
+
+      comment    ?= ''
+      definition ?= ''
+      short_name ?= ''
+
+      definition =~ /^([\w\-]*)/
+      long_name = \1
+      has_argument    = definition.indexOf('=') != -1
+      multi_supported = definition.indexOf('+') != -1
+      optional        = /\[=.*?\]/.test(definition)
+
+      long_name  = long_name.trim()
+      short_name = short_name.trim()
+
+      if optional && short_name
+        throw new Error('optional argument can only work with long option');
+
+      unless long_name
+        long_name = short_name
+
+      name = long_name
+
+      if long_name == ''
+        throw new Error("empty option found. the last option name is #{@long_names.slice(-1)}");
+
+      unless @long_options[long_name]?
+        @long_names.push long_name
+        @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition}
+      else
+        throw new Error("option #{long_name} redefined.");
+
+      if short_name != ''
+        if short_name.length != 1
+          throw new Error 'short option must be single characters'
+        @short_options[short_name] = @long_options[long_name]
+    @
+
+  # Events
+  on: (name, cb) ->
+    @events[name] = cb
+    @event_names.push name
+    @
+
+  emit: (name, cb) ->
+    if @events[name]
+      @events[name].call @, @parsedOption.argv, @parsedOption.options
+    else
+      throw new Error("Getopt trigger '#{name}' is not found")
+
+  trigger_events_: ->
+    {options} = @parsedOption
+    for name in @event_names
+      if options[name]?
+        @emit(name)
+    @
+
+  # Command line parser
   save_option_: (options, option, argv) ->
     if option.has_argument
       if argv.length == 0
@@ -28,116 +113,57 @@ class Getopt
         options[name] = value
     @
 
-
-  # public
-  constructor: (@options) ->
-    @short_options = {}
-    @long_options  = {}
-    @long_names = []
-    @events = {}
-    @event_names = []
-
-    if process.argv[1]
-      @help = "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]\n"
-    else
-      @help = "[[OPTIONS]]"
-
-    for option in @options
-      [short_name, definition, comment] = option
-
-      comment    ?= ''
-      definition ?= ''
-      short_name ?= ''
-
-      definition =~ /^([\w\-]*)/
-      long_name = \1
-      has_argument    = definition.indexOf('=') != -1
-      multi_supported = definition.indexOf('+') != -1
-      optional        = /\[=.*?\]/.test(definition)
-
-      if optional && short_name
-        throw new Error('optional argument can only work with long option');
-
-      unless long_name
-        long_name = short_name
-
-      name = long_name
-
-      unless @long_options[long_name]?
-        @long_names.push long_name
-        @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition}
-      else
-        throw new Error("option #{long_name} redefined.");
-
-      if short_name != ''
-        if short_name.length != 1
-          throw new Error 'short option must be single characters'
-        @short_options[short_name] = @long_options[long_name]
-    @
-
-  # Events
-  on: (name, cb) ->
-    @events[name] = cb
-    @event_names.push name
-    @
-
-  trigger_events_: (opt) ->
-    {options} = opt
-    for name in @event_names
-      if options[name]?
-        @events[name].call @, opt.argv, opt.options
-    @
-
-  # Command line parser
   parse: (argv) ->
-    # clone argv
-    argv = argv[0..]
-    rt_options = {}
-    rt_argv = []
-    while (arg = argv.shift())?
-      if arg =~ /^-(\w[\w\-]*)/
-        # short option
-        short_names = \1
-        for short_name, i in short_names
-          option = @short_options[short_name]
+    try
+      # clone argv
+      argv = argv[0..]
+      rt_options = {}
+      rt_argv = []
+      while (arg = argv.shift())?
+        if arg =~ /^-(\w[\w\-]*)/
+          # short option
+          short_names = \1
+          for short_name, i in short_names
+            option = @short_options[short_name]
+            unless option
+              throw new Error("invalid option #{short_name}")
+
+            if option.has_argument
+              if i < short_names.length - 1
+                argv.unshift short_names.slice(i+1)
+              @save_option_(rt_options, option, argv)
+              break
+            else
+              @save_option_(rt_options, option, argv)
+
+        else if arg =~ /^--(\w[\w\-]*)((?:=.*)?)$/
+          # long option
+          long_name = \1
+          value     = \2
+          option = @long_options[long_name]
           unless option
-            throw new Error("invalid option #{short_name}")
+            throw new Error("invalid option #{long_name}")
 
-          if option.has_argument
-            if i < short_names.length - 1
-              argv.unshift short_names.slice(i+1)
-            @save_option_(rt_options, option, argv)
-            break
-          else
-            @save_option_(rt_options, option, argv)
+          if value != ''
+            value = value[1..]
+            argv.unshift(value)
+          else if option.optional
+            argv.unshift('')
 
-      else if arg =~ /^--(\w[\w\-]*)((?:=.*)?)$/
-        # long option
-        long_name = \1
-        value     = \2
-        option = @long_options[long_name]
-        unless option
-          throw new Error("invalid option #{long_name}")
+          @save_option_(rt_options, option, argv)
 
-        if value != ''
-          value = value[1..]
-          argv.unshift(value)
-        else if option.optional
-          argv.unshift('')
+        else if arg == '--'
+          rt_argv = rt_argv.concat(argv)
+          break
 
-        @save_option_(rt_options, option, argv)
+        else
+          rt_argv.push arg
+    catch e
+      @errorFunc(e)
 
-      else if arg == '--'
-        rt_argv = rt_argv.concat(argv)
-        break
-
-      else
-        rt_argv.push arg
-
-    opt = {argv: rt_argv, options: rt_options}
-    @parsedOptions = opt
-    @trigger_events_(opt)
-    opt
+    @parsedOption = new ParsedOption(rt_argv, rt_options)
+    @trigger_events_()
+    @parsedOption
 
   parse_system: ->
     @parse(process.argv.slice(2))
@@ -190,6 +216,9 @@ class Getopt
 
   getVersion: ->
     Getopt.VERSION
+
+  error: (@errorFunc) ->
+    @
 
   @getVersion: ->
     @VERSION

@@ -60,11 +60,9 @@ code: simple.js
     //   '+':   multiple option supported
     getopt = new Getopt([
       ['s' , ''],
-      [''  , 'long'],
-      ['S' , 'short-with-arg='],
-      ['L' , 'long-with-arg=ARG'],
-      ['m' , 'multi-with-arg=ARG+'],
-      [''  , 'color[=COLOR]'],
+      ['L' , '='],
+      ['m' , '=+'],
+      [''  , 'color[=]'],
       ['h' , 'help']
     ]);
 
@@ -74,13 +72,9 @@ code: simple.js
     opt = getopt.parse(process.argv.slice(2));
     console.info(opt);
 
-$ node examples/simple.js foo -s --long-with-arg bar -m a -m b -- --others
-
+    $ node simple.js foo -s --long-with-arg bar -m a -m b -- --others
     { argv: [ 'foo', '--others' ],
-      options:
-       { s: true,
-         'long-with-arg': 'bar',
-         'multi-with-arg': [ 'a', 'b' ] } }
+      options: { s: true, 'long-with-arg': 'bar', m: [ 'a', 'b' ] } }
 
 **Work with help**
 
@@ -240,9 +234,17 @@ Getopt Methods:
         set help template to HELP if HELP is not empty.
         bind 'help' option to default action, show help and exit with 0.
 
-    Getpot on(String optionName, Function(Array argv, Object options) action)
+    Getpot on(String optionName, Function<Array argv, Object options> action)
         after parsing, trigger the action if optionName is found.
         the 'this' in action will be instance of Getopt.
+
+    Getopt error(Function<Error e> callback)
+        when parse failed callback will be trigger. default is display error message and exit with 1.
+
+Getopt Static Methods:
+
+    create(Array options)
+        equals new Getopt(options)
 
 Others:
 

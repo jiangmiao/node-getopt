@@ -76,7 +76,9 @@ try
 
   # invalid  option check
   getopt = new Getopt([
-  ])
+  ]).error((e) ->
+    throw e
+  )
 
   throws(
     -> getopt.parse(['-A'])
