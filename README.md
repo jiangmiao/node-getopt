@@ -130,8 +130,6 @@ optional argument
     { argv: [], options: { color: 'foo' } }
 
     $ node simple.js --color foo
-    { argv: [], options: { color: 'foo' } }
-    $ node examples/simple.js --color foo
     { argv: [ 'foo' ], options: { color: '' }
 
 chain option
