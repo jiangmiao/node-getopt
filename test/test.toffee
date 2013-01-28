@@ -62,6 +62,17 @@ try
     'has-argument'
   )
 
+  eq(
+    getopt.parse(['-ba<a >'])
+    {
+      argv: [],
+      options: {
+        'has-argument': '<a >',
+        'no-argument': true
+      }
+    },
+    'has-argument'
+  )
 
   # no argument
   getopt = new Getopt([

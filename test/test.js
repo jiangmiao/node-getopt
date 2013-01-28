@@ -34,6 +34,13 @@
         'no-argument': true
       }
     }, 'has-argument');
+    eq(getopt.parse(['-ba<a >']), {
+      argv: [],
+      options: {
+        'has-argument': '<a >',
+        'no-argument': true
+      }
+    }, 'has-argument');
     getopt = new Getopt([['A', 'A'], ['B', 'B'], ['C', 'C']]);
     eq(getopt.parse(['-ABC']), {
       argv: [],
