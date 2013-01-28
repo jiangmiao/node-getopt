@@ -12,7 +12,7 @@ class Getopt
   @NO_ARGUMENT = false
   @MULTI_SUPPORTED = true
   @SINGLE_ONLY = false
-  @VERSION = '0.2.2'
+  @VERSION = '0.2.3'
 
 
   # public
