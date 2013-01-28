@@ -130,7 +130,7 @@ class Getopt
 
             if option.has_argument
               if i < short_names.length - 1
-                argv.unshift short_names.slice(i+1)
+                argv.unshift arg.slice(i+2)
               @save_option_(rt_options, option, argv)
               break
             else
@@ -228,3 +228,5 @@ class Getopt
     new Getopt(options)
 
 module.exports = Getopt
+
+# vim: sw=2 ts=2 sts=2 expandtab :

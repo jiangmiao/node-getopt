@@ -20,6 +20,20 @@
         'has-argument': 'a-value'
       }
     }, 'has-argument');
+    getopt = new Getopt([['a', 'has-argument='], ['b', 'no-argument']]);
+    eq(getopt.parse(['-aone two three']), {
+      argv: [],
+      options: {
+        'has-argument': 'one two three'
+      }
+    }, 'has-argument');
+    eq(getopt.parse(['-baone two three']), {
+      argv: [],
+      options: {
+        'has-argument': 'one two three',
+        'no-argument': true
+      }
+    }, 'has-argument');
     getopt = new Getopt([['A', 'A'], ['B', 'B'], ['C', 'C']]);
     eq(getopt.parse(['-ABC']), {
       argv: [],
