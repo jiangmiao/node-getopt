@@ -129,8 +129,9 @@ class Getopt
               throw new Error("invalid option #{short_name}")
 
             if option.has_argument
-              if i < short_names.length - 1
-                argv.unshift arg.slice(i+2)
+              remain = arg.slice(i+2)
+              if remain
+                argv.unshift remain
               @save_option_(rt_options, option, argv)
               break
             else
