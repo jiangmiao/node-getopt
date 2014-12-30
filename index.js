@@ -1,1 +1,1 @@
-module.exports = require(__dirname + '/lib/getopt.js');
+module.exports = require('./lib/getopt.js');
