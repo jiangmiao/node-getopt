@@ -5,6 +5,7 @@
   "description": "featured command line args parser",
   "keywords" : ["getopt", "arg", "parser"],
   "homepage": "http://github.com/jiangmiao/node-getopt",
+  "license": "MIT",
   "repository" : {
     "type" : "git",
     "url" : "git://github.com/jiangmiao/node-getopt.git"
