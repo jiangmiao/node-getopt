@@ -19,4 +19,4 @@ getopt = new Getopt([
 // parseSystem is alias  of parse(process.argv.slice(2))
 // opt = getopt.parseSystem();
 opt = getopt.parse(process.argv.slice(2));
-console.info(opt);
+console.info({argv: opt.argv, options: opt.options});

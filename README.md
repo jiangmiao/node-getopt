@@ -24,7 +24,7 @@ code: oneline.js
     .bindHelp()     // bind option 'help' to default action
     .parseSystem(); // parse command line
 
-    console.info(opt);
+    console.info({argv: opt.argv, options: opt.options});
 
 `$ node oneline.js  foo -s --long-with-arg bar -m a -m b -- --others`
 
@@ -71,7 +71,7 @@ code: simple.js
     // parseSystem is alias  of parse(process.argv.slice(2))
     // opt = getopt.parseSystem();
     opt = getopt.parse(process.argv.slice(2));
-    console.info(opt);
+    console.info({argv: opt.argv, options: opt.options});
 
 `$ node simple.js foo -s --long-with-arg bar -m a -m b -- --others`
 
@@ -209,12 +209,12 @@ Getopt Methods:
 
             ARG can be replaced by any word.
 
-    Object parse(Array argv)
+    Getopt parse(Array argv)
         parse argv
 
-        Returns: {argv: '...', options: {...}}
+        Returns: {argv: '...', options: {...}, ...}
 
-    Object parseSystem()
+    Getopt parseSystem()
         alias of parse(process.argv.slice(2))
 
 

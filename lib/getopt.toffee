@@ -14,14 +14,15 @@ class Getopt
   @SINGLE_ONLY = false
   @VERSION = '0.2.3'
 
-
   # public
-  constructor: (@options) ->
+  constructor: (@optionsPattern) ->
     @short_options = {}
     @long_options  = {}
     @long_names = []
     @events = {}
     @event_names = []
+    @argv = []
+    @options = {}
     @errorFunc = (e) ->
       console.info(e.message)
       process.exit(1)
@@ -32,7 +33,7 @@ class Getopt
     else
       @help = "[[OPTIONS]]"
 
-    for option in @options
+    for option in @optionsPattern
       [short_name, definition, comment] = option
 
       comment    ?= ''
@@ -100,11 +101,6 @@ class Getopt
       value = true
 
     names = [option.name]
-    # Have't decided replace - to _ or not or both existed
-    #    opt.options['option-with-hyphen']
-    # vs opt.options.option_with_hyphen
-    # if option.name.indexOf('-') != -1
-    #   names.push option.name.replace(/\-/g, '_')
     for name in names
       if option.multi_supported
         options[name] ?= []
@@ -140,6 +136,7 @@ class Getopt
           # long option
           long_name = \1
           value     = \2
+          # value     = arg.substring(long_name.length+2)
           option = @long_options[long_name]
           unless option
             throw new Error("invalid option #{long_name}")
@@ -162,8 +159,10 @@ class Getopt
       @errorFunc(e)
 
     @parsedOption = new ParsedOption(rt_argv, rt_options)
+    @argv = rt_argv
+    @options = rt_options
     @trigger_events_()
-    @parsedOption
+    @
 
   parse_system: ->
     @parse(process.argv.slice(2))

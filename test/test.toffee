@@ -2,7 +2,8 @@ try
   Getopt = require './..'
   assert = require 'assert'
 
-  eq = assert.deepEqual
+  eq = (a, b) =>
+    assert.deepEqual {argv: a.argv, options: a.options}, b
   throws = assert.throws
 
   # has argument
@@ -15,7 +16,7 @@ try
     {
       argv: [],
       options: {
-        'has-argument': 'a-value', 
+        'has-argument': 'a-value',
       }
     },
     'has-argument'
@@ -27,6 +28,17 @@ try
       argv: [],
       options: {
         'has-argument': 'a-value',
+      }
+    },
+    'has-argument'
+  )
+
+  eq(
+    getopt.parse(["--has-argument=one\ntwo"])
+    {
+      argv: [],
+      options: {
+        'has-argument': "one\ntwo",
       }
     },
     'has-argument'
@@ -84,7 +96,7 @@ try
   eq(
     getopt.parse(['-ABC'])
     {
-      argv: [], 
+      argv: [],
       options: {
         'A': true,
         'B': true,
@@ -105,7 +117,7 @@ try
   eq(
     getopt.parse(['-ABCa', 'foo'])
     {
-      argv: [], 
+      argv: [],
       options: {
         'A': true,
         'B': true,
@@ -154,7 +166,7 @@ try
       options: {}
     }
   )
-  
+
 
   # mixed
   getopt = new Getopt([

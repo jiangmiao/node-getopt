@@ -13,4 +13,4 @@ opt = require('..').create([
 .bindHelp()     // bind option 'help' to default action
 .parseSystem(); // parse command line
 
-console.info(opt);
+console.info({argv: opt.argv, options: opt.options});
