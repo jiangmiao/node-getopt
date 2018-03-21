@@ -1,14 +1,14 @@
 {
   "name": "node-getopt",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "author" : "Jiang Miao <jiangfriend@gmail.com>",
   "description": "featured command line args parser",
   "keywords" : ["getopt", "arg", "parser"],
-  "homepage": "http://github.com/jiangmiao/node-getopt",
+  "homepage": "https://github.com/jiangmiao/node-getopt",
   "license": "MIT",
   "repository" : {
     "type" : "git",
-    "url" : "git://github.com/jiangmiao/node-getopt.git"
+    "url" : "https://github.com/jiangmiao/node-getopt"
   },
   "main" : "./lib",
   "engines" : { "node": ">= 0.6.0" }
