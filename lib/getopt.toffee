@@ -136,7 +136,7 @@ class Getopt
             else
               @save_option_(rt_options, option, argv)
 
-        else if arg =~ /^--(\w[\w\-]*)((?:=.*)?)$/
+        else if arg =~ /^--(\w[\w\-]*)((?:=[^]*)?)$/
           # long option
           long_name = \1
           value     = \2
