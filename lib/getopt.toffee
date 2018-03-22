@@ -1,15 +1,9 @@
-# the 'constructor' option generate an exception
-# https://github.com/jiangmiao/node-getopt/issues/13
-# solution: add prefix 'opt'
-fix = (long_name) ->
-  'o_' + long_name
-
 class Getopt
   @HAS_ARGUMENT = true
   @NO_ARGUMENT = false
   @MULTI_SUPPORTED = true
   @SINGLE_ONLY = false
-  @VERSION = '0.2.3'
+  @VERSION = '0.3.1'
 
   # public
   constructor: (@optionsPattern) ->
@@ -29,6 +23,7 @@ class Getopt
     else
       @help = "[[OPTIONS]]"
 
+    names = {}
     for option in @optionsPattern
       [short_name, definition, comment, def] = option
 
@@ -48,29 +43,29 @@ class Getopt
       if optional && short_name
         throw new Error('optional argument can only work with long option');
 
-      unless long_name
-        long_name = short_name
+      long_name ||= short_name
 
-      fixed_long_name = fix long_name
+      fixed_long_name = 'opt_' + long_name
       name = long_name
 
       if long_name == ''
         throw new Error("empty option found. the last option name is #{@long_names.slice(-1)}");
 
-      unless @long_options[fixed_long_name]?
+      unless names[fixed_long_name]?
         @long_names.push long_name
-        @long_options[fixed_long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition, default: def}
+        @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition, def}
+        names[fixed_long_name] = true
       else
         throw new Error("option #{long_name} is redefined.");
 
       if short_name != ''
         if short_name.length != 1
           throw new Error 'short option must be single characters'
-        @short_options[short_name] = @long_options[fixed_long_name]
+        @short_options[short_name] = @long_options[long_name]
     @
 
   getOptionByName: (name) ->
-    @long_options[fix name] ? @short_options[name]
+    @long_options[name] ? @short_options[name]
 
   getOptionName: (name) ->
     @getOptionByName(name)?.name
@@ -118,9 +113,10 @@ class Getopt
       rt_options = {}
       rt_argv = []
       for long_name in @long_names
-        option = @long_options[fix long_name]
-        if option.default? || rt_options[option.long_name]?
-          rt_options[option.long_name] = option.default
+        option = @long_options[long_name]
+        # set all proto keys eg: constructor toString to undefined
+        if option.def? || rt_options[option.long_name]?
+          rt_options[option.long_name] = option.def
       while (arg = argv.shift())?
         if arg =~ /^-(\w[\w\-]*)/
           # short option
@@ -143,7 +139,7 @@ class Getopt
           long_name = \1
           value     = \2
           # value     = arg.substring(long_name.length+2)
-          option = @long_options[fix long_name]
+          option = @long_options[long_name]
           unless option
             throw new Error("invalid option #{long_name}")
 
@@ -166,7 +162,7 @@ class Getopt
           @events['']?.call @, arg
       # assign to short name
       for name in Object.keys(rt_options)
-        sname = @long_options[fix name].short_name
+        sname = @long_options[name].short_name
         if sname != ''
           rt_options[sname] = rt_options[name]
     catch e
@@ -186,32 +182,51 @@ class Getopt
   setHelp: (@help) ->
     @
 
+  sort: ->
+    @long_names.sort (a, b) ->
+      a > b && 1 || a < b && -1 || 0
+
   getHelp: ->
     ws = []
     options = []
+    table = []
 
     for long_name in @long_names
-      option = @long_options[fix long_name]
-      {short_name, long_name, comment, definition} = option
-      if (short_name && short_name == long_name)
-        # only has short name
-        opt = "-#{short_name}"
-      else if short_name
-        # both has short name and long name
-        opt = "-#{short_name}, --#{definition}"
-      else
-        # only has long name
-        opt = "    --#{definition}"
-      ws[0] = Math.max(ws[0] >> 0, opt.length)
-      options.push [opt, comment]
+      tr = []
+      option = @long_options[long_name]
+      {short_name, long_name, comment, definition, def} = option
+      tr.push(
+        if short_name
+          if short_name == long_name
+            # only has short name
+            " -#{short_name}"
+          else
+            # both has short name and long name
+            " -#{short_name}, --#{definition}"
+        else
+            # only has long name
+            "     --#{definition}"
+      )
+      tr.push " " + comment
+      if def
+        tr.push " (default: #{def})"
+      table.push tr
+    for tr in table
+      for td, i in tr
+        ws[i] ?= 0
+        ws[i] = Math.max(ws[i], td.length)
 
-    strs = for option in options
-      [opt, comment] = option
-      while opt.length < ws[0]
-        opt += ' '
-      "  #{opt}  #{comment}"
+    lines = for tr in table
+      line = ''
+      for td, i in tr
+        if i
+          n = ws[i-1] - tr[i-1].length
+          while n--
+            line += ' '
+        line += td
+      line.trimRight()
 
-    @help.replace('[[OPTIONS]]', strs.join("\n"))
+    @help.replace('[[OPTIONS]]', lines.join("\n"))
 
   showHelp: ->
     console.info @getHelp()
