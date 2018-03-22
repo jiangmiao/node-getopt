@@ -30,7 +30,7 @@ class Getopt
       @help = "[[OPTIONS]]"
 
     for option in @optionsPattern
-      [short_name, definition, comment] = option
+      [short_name, definition, comment, def] = option
 
       comment    ?= ''
       definition ?= ''
@@ -59,7 +59,7 @@ class Getopt
 
       unless @long_options[fixed_long_name]?
         @long_names.push long_name
-        @long_options[fixed_long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition}
+        @long_options[fixed_long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition, default: def}
       else
         throw new Error("option #{long_name} is redefined.");
 
@@ -117,6 +117,10 @@ class Getopt
       argv = argv[0..]
       rt_options = {}
       rt_argv = []
+      for long_name in @long_names
+        option = @long_options[fix long_name]
+        if option.default? || rt_options[option.long_name]?
+          rt_options[option.long_name] = option.default
       while (arg = argv.shift())?
         if arg =~ /^-(\w[\w\-]*)/
           # short option
@@ -160,6 +164,11 @@ class Getopt
         else
           rt_argv.push arg
           @events['']?.call @, arg
+      # assign to short name
+      for name in Object.keys(rt_options)
+        sname = @long_options[fix name].short_name
+        if sname != ''
+          rt_options[sname] = rt_options[name]
     catch e
       @errorFunc(e)
 

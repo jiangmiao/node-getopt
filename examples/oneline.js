@@ -2,7 +2,7 @@
 opt = require('..').create([
   ['s' , ''                    , 'short option.'],
   [''  , 'long'                , 'long option.'],
-  ['S' , 'short-with-arg=ARG'  , 'option with argument'],
+  ['S' , 'short-with-arg=ARG'  , 'option with argument', 'S'],
   ['L' , 'long-with-arg=ARG'   , 'long option with argument'],
   [''  , 'color[=COLOR]'       , 'COLOR is optional'],
   ['m' , 'multi-with-arg=ARG+' , 'multiple option with argument'],

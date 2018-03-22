@@ -200,8 +200,8 @@ References
 Getopt Methods:
 
     constructor(Array options)
-        options is a set of option. each option contains 3 fields.
-        [short_name, long_name_with_definition, comment]
+        options is a set of option. each option contains 4 fields.
+        [short_name, long_name_with_definition, comment, default]
         Definition:
             * '=ARG':   has argument
             * '[=ARG]': has argument but optional

@@ -17,6 +17,7 @@ try
       argv: [],
       options: {
         'has-argument': 'a-value',
+        'a': 'a-value',
       }
     },
     'has-argument'
@@ -28,6 +29,7 @@ try
       argv: [],
       options: {
         'has-argument': 'a-value',
+        'a': 'a-value',
       }
     },
     'has-argument'
@@ -39,6 +41,7 @@ try
       argv: [],
       options: {
         'has-argument': "one\ntwo",
+        'a': "one\ntwo",
       }
     },
     'has-argument'
@@ -57,9 +60,9 @@ try
       argv: [],
       options: {
         'has-argument': 'one two three',
+        'a': 'one two three',
       }
-    },
-    'has-argument'
+    }
   )
 
   eq(
@@ -69,6 +72,9 @@ try
       options: {
         'has-argument': 'one two three',
         'no-argument': true
+
+        'a': 'one two three',
+        'b': true
       }
     },
     'has-argument'
@@ -81,6 +87,9 @@ try
       options: {
         'has-argument': '<a >',
         'no-argument': true
+
+        'a': '<a >',
+        'b': true
       }
     },
     'has-argument'
@@ -150,6 +159,7 @@ try
       argv: [],
       options: {
         'help': true
+        'h': true
       }
     },
     'long option'
@@ -183,15 +193,35 @@ try
         'help': true,
         'multi': ['a', 'b', 'c'],
         'short': true
+
+        'h': true,
+        'm': ['a', 'b', 'c'],
+        's': true
       }
     }
   )
 
   # the 'constructor' option generate an exception
   # https://github.com/jiangmiao/node-getopt/issues/13
-  getopt = new Getopt([
+  opt = new Getopt([
     ['c', 'constructor', 'constructor'],
-  ]);
+  ]).parse(['-c']);
+
+  eq(
+    opt,
+    {argv: [], options: {'constructor': true, c: true}}
+  )
+
+  opt = new Getopt([
+    ['c', 'constructor', 'constructor'],
+    ['', 'toString']
+  ]).parse([]);
+
+  eq(
+    opt,
+    {argv: [], options: {'constructor': undefined, c: undefined, toString: undefined}}
+  )
+
 
   # event trigger
   getopt = new Getopt([
@@ -220,6 +250,29 @@ try
     res,
     ['n1', 'a1', 'r1', 'a2', true, 'l1', 'n2']
   )
+
+  ## default value
+  opt = new Getopt([
+    ['a', '=', '', 'a']
+    ['M', '=+', '', ['m1', 'm2']]
+  ]).parse([])
+  eq(
+    opt,
+    {
+      argv: [],
+      options: {
+        'a': 'a',
+        'M': ['m1', 'm2']
+      }
+    },
+  )
+
+  opt = new Getopt([
+    ['s', ''],
+    ['', 'long']
+    ['b', 'both']
+  ])
+  assert.deepEqual opt.long_names, ['s', 'long', 'both']
 
   console.info "\x1b[32mTest passed.\x1b[0m"
 catch e
