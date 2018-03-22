@@ -13,7 +13,7 @@ code: oneline.js
     opt = require('node-getopt').create([
       ['s' , ''                    , 'short option.'],
       [''  , 'long'                , 'long option.'],
-      ['S' , 'short-with-arg=ARG'  , 'option with argument'],
+      ['S' , 'short-with-arg=ARG'  , 'option with argument', 'S'],
       ['L' , 'long-with-arg=ARG'   , 'long option with argument'],
       [''  , 'color[=COLOR]'       , 'COLOR is optional'],
       ['m' , 'multi-with-arg=ARG+' , 'multiple option with argument'],
@@ -30,9 +30,13 @@ code: oneline.js
 
     { argv: [ 'foo', '--others' ],
       options:
-       { s: true,
+       { 'short-with-arg': 'S',
+         s: true,
          'long-with-arg': 'bar',
-         'multi-with-arg': [ 'a', 'b' ] } }
+         'multi-with-arg': [ 'a', 'b' ],
+         S: 'S',
+         L: 'bar',
+         m: [ 'a', 'b' ] } }
 
 `$ node oneline.js -h`
 
