@@ -187,6 +187,12 @@ try
     }
   )
 
+  # the 'constructor' option generate an exception
+  # https://github.com/jiangmiao/node-getopt/issues/13
+  getopt = new Getopt([
+    ['c', 'constructor', 'constructor'],
+  ]);
+
   console.info "\x1b[32mTest passed.\x1b[0m"
 catch e
   console.info e

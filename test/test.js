@@ -101,6 +101,7 @@
         'short': true
       }
     });
+    getopt = new Getopt([['c', 'constructor', 'constructor']]);
     console.info("\x1b[32mTest passed.\x1b[0m");
   } catch (_error) {
     e = _error;

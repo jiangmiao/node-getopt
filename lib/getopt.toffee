@@ -1,11 +1,8 @@
-class ParsedOption
-  constructor: (@argv, @options) ->
-  empty: ->
-    if @argv.length
-      return false
-    for own k, v of @options
-      return false
-    return true
+# the 'constructor' option generate an exception
+# https://github.com/jiangmiao/node-getopt/issues/13
+# solution: add prefix 'opt'
+fix = (long_name) ->
+  'opt' + long_name
 
 class Getopt
   @HAS_ARGUMENT = true
@@ -47,6 +44,7 @@ class Getopt
       optional        = /\[=.*?\]/.test(definition)
 
       long_name  = long_name.trim()
+      fixed_long_name = fix long_name
       short_name = short_name.trim()
 
       if optional && short_name
@@ -60,16 +58,16 @@ class Getopt
       if long_name == ''
         throw new Error("empty option found. the last option name is #{@long_names.slice(-1)}");
 
-      unless @long_options[long_name]?
+      unless @long_options[fixed_long_name]?
         @long_names.push long_name
-        @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition}
+        @long_options[fixed_long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition}
       else
         throw new Error("option #{long_name} redefined.");
 
       if short_name != ''
         if short_name.length != 1
           throw new Error 'short option must be single characters'
-        @short_options[short_name] = @long_options[long_name]
+        @short_options[short_name] = @long_options[fixed_long_name]
     @
 
   # Events
@@ -80,14 +78,13 @@ class Getopt
 
   emit: (name, cb) ->
     if @events[name]
-      @events[name].call @, @parsedOption.argv, @parsedOption.options
+      @events[name].call @, @argv, @options
     else
       throw new Error("Getopt trigger '#{name}' is not found")
 
   trigger_events_: ->
-    {options} = @parsedOption
     for name in @event_names
-      if options[name]?
+      if @options[name]?
         @emit(name)
     @
 
@@ -137,7 +134,7 @@ class Getopt
           long_name = \1
           value     = \2
           # value     = arg.substring(long_name.length+2)
-          option = @long_options[long_name]
+          option = @long_options[fix long_name]
           unless option
             throw new Error("invalid option #{long_name}")
 
@@ -158,17 +155,16 @@ class Getopt
     catch e
       @errorFunc(e)
 
-    @parsedOption = new ParsedOption(rt_argv, rt_options)
     @argv = rt_argv
     @options = rt_options
     @trigger_events_()
     @
 
   parse_system: ->
-    @parse(process.argv.slice(2))
+    @parseSystem()
 
   parseSystem: ->
-    @parse_system()
+    @parse(process.argv.slice(2))
 
   # Help Controller
   setHelp: (@help) ->
@@ -179,7 +175,7 @@ class Getopt
     options = []
 
     for long_name in @long_names
-      option = @long_options[long_name]
+      option = @long_options[fix long_name]
       {short_name, long_name, comment, definition} = option
       if (short_name && short_name == long_name)
         # only has short name
