@@ -193,6 +193,34 @@ try
     ['c', 'constructor', 'constructor'],
   ]);
 
+  # event trigger
+  getopt = new Getopt([
+    ['A', '=+'],
+    ['R', '=+'],
+    ['c', 'constructor'],
+    ['', 'long='],
+  ])
+
+  res = []
+  getopt
+  .on 'A', (arg) ->
+    res.push arg
+  .on 'R', (arg) ->
+    res.push arg
+  .on 'c', (arg) ->
+    res.push arg
+  .on 'long', (arg) ->
+    res.push arg
+  .on '', (arg) ->
+    res.push arg
+
+  getopt.parse(['n1', '-A', 'a1', '-R', 'r1', '-A', 'a2', '--constructor', '--long=l1', '--', 'n2'])
+
+  assert.deepEqual(
+    res,
+    ['n1', 'a1', 'r1', 'a2', true, 'l1', 'n2']
+  )
+
   console.info "\x1b[32mTest passed.\x1b[0m"
 catch e
   console.info e

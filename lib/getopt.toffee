@@ -2,7 +2,7 @@
 # https://github.com/jiangmiao/node-getopt/issues/13
 # solution: add prefix 'opt'
 fix = (long_name) ->
-  'opt' + long_name
+  'o_' + long_name
 
 class Getopt
   @HAS_ARGUMENT = true
@@ -17,7 +17,6 @@ class Getopt
     @long_options  = {}
     @long_names = []
     @events = {}
-    @event_names = []
     @argv = []
     @options = {}
     @errorFunc = (e) ->
@@ -44,7 +43,6 @@ class Getopt
       optional        = /\[=.*?\]/.test(definition)
 
       long_name  = long_name.trim()
-      fixed_long_name = fix long_name
       short_name = short_name.trim()
 
       if optional && short_name
@@ -53,6 +51,7 @@ class Getopt
       unless long_name
         long_name = short_name
 
+      fixed_long_name = fix long_name
       name = long_name
 
       if long_name == ''
@@ -62,7 +61,7 @@ class Getopt
         @long_names.push long_name
         @long_options[fixed_long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition}
       else
-        throw new Error("option #{long_name} redefined.");
+        throw new Error("option #{long_name} is redefined.");
 
       if short_name != ''
         if short_name.length != 1
@@ -70,23 +69,29 @@ class Getopt
         @short_options[short_name] = @long_options[fixed_long_name]
     @
 
+  getOptionByName: (name) ->
+    @long_options[fix name] ? @short_options[name]
+
+  getOptionName: (name) ->
+    @getOptionByName(name)?.name
+
   # Events
   on: (name, cb) ->
-    @events[name] = cb
-    @event_names.push name
-    @
-
-  emit: (name, cb) ->
-    if @events[name]
-      @events[name].call @, @argv, @options
+    if name
+      iname = @getOptionName(name)
+      unless iname
+        throw new Error "unknown option #{name}"
     else
-      throw new Error("Getopt trigger '#{name}' is not found")
-
-  trigger_events_: ->
-    for name in @event_names
-      if @options[name]?
-        @emit(name)
+      iname = name
+    @events[iname] = cb
     @
+
+  emit: (name, value) ->
+    event = @events[@getOptionName(name)]
+    if event
+      event.call @, value
+    else
+      throw new Error("Getopt event on '#{name}' is not found")
 
   # Command line parser
   save_option_: (options, option, argv) ->
@@ -97,13 +102,13 @@ class Getopt
     else
       value = true
 
-    names = [option.name]
-    for name in names
-      if option.multi_supported
-        options[name] ?= []
-        options[name].push value
-      else
-        options[name] = value
+    name = option.name
+    if option.multi_supported
+      options[name] ?= []
+      options[name].push value
+    else
+      options[name] = value
+    @events[name]?.call @, value
     @
 
   parse: (argv) ->
@@ -148,16 +153,18 @@ class Getopt
 
         else if arg == '--'
           rt_argv = rt_argv.concat(argv)
+          for arg in argv
+            @events['']?.call @, arg
           break
 
         else
           rt_argv.push arg
+          @events['']?.call @, arg
     catch e
       @errorFunc(e)
 
     @argv = rt_argv
     @options = rt_options
-    @trigger_events_()
     @
 
   parse_system: ->
