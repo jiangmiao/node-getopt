@@ -199,15 +199,15 @@ class Getopt
         if short_name
           if short_name == long_name
             # only has short name
-            " -#{short_name}"
+            "  -#{short_name}"
           else
             # both has short name and long name
-            " -#{short_name}, --#{definition}"
+            "  -#{short_name}, --#{definition}"
         else
             # only has long name
             "     --#{definition}"
       )
-      tr.push " " + comment
+      tr.push "  " + comment
       if def
         tr.push " (default: #{def})"
       table.push tr
