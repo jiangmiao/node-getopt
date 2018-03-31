@@ -1,3 +1,5 @@
+path = require 'path'
+
 class Getopt
   @HAS_ARGUMENT = true
   @NO_ARGUMENT = false
@@ -6,25 +8,34 @@ class Getopt
   @VERSION = '0.3.1'
 
   # public
-  constructor: (@optionsPattern) ->
+  constructor: (optionsPattern) ->
     @short_options = {}
     @long_options  = {}
     @long_names = []
     @events = {}
     @argv = []
     @options = {}
+    @unique_names = {}
+    @optionsPattern = []
     @errorFunc = (e) ->
       console.info(e.message)
       process.exit(1)
 
 
     if process.argv[1]
-      @help = "Usage: node #{process.argv[1].match(/(?:.*[\/\\])?(.*)$/)[1]}\n\n[[OPTIONS]]\n"
+      @help = """
+Usage:
+  node #{path.basename(process.argv[1])} [OPTION]
+
+Options:
+[[OPTIONS]]
+      """
     else
       @help = "[[OPTIONS]]"
+    @append optionsPattern
 
-    names = {}
-    for option in @optionsPattern
+  append: (optionsPattern) ->
+    for option in optionsPattern
       [short_name, definition, comment, def] = option
 
       comment    ?= ''
@@ -51,10 +62,10 @@ class Getopt
       if long_name == ''
         throw new Error("empty option found. the last option name is #{@long_names.slice(-1)}");
 
-      unless names[fixed_long_name]?
+      unless @unique_names[fixed_long_name]?
         @long_names.push long_name
         @long_options[long_name] = {name, short_name, long_name, has_argument, multi_supported, comment, optional, definition, def}
-        names[fixed_long_name] = true
+        @unique_names[fixed_long_name] = true
       else
         throw new Error("option #{long_name} is redefined.");
 
@@ -63,6 +74,16 @@ class Getopt
           throw new Error 'short option must be single characters'
         @short_options[short_name] = @long_options[long_name]
     @
+
+  # fill pattern if not exists
+  fill: (pattern) ->
+    [s_, l_] = pattern
+    s = ''
+    l = ''
+    @short_options[s_] || s = s_
+    @long_options[l_] || l = l_
+    if s || l
+      @append([[s, l, pattern[2..]...]])
 
   getOptionByName: (name) ->
     @long_options[name] ? @short_options[name]
@@ -205,9 +226,9 @@ class Getopt
             "  -#{short_name}, --#{definition}"
         else
             # only has long name
-            "     --#{definition}"
+            "      --#{definition}"
       )
-      tr.push "  " + comment
+      tr.push " " + comment
       if def
         tr.push " (default: #{def})"
       table.push tr
@@ -235,6 +256,7 @@ class Getopt
   bindHelp: (help) ->
     if help
       @setHelp help
+    @fill(['h', 'help', 'display this help'])
     @on 'help', ->
       @showHelp()
       process.exit(0)
