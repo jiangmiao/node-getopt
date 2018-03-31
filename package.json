@@ -1,6 +1,6 @@
 {
   "name": "node-getopt",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author" : "Jiang Miao <jiangfriend@gmail.com>",
   "description": "featured command line args parser",
   "keywords" : ["getopt", "arg", "parser"],
